@@ -1,0 +1,8 @@
+.env
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+.packages
+*.g.dart
+*.freezed.dart

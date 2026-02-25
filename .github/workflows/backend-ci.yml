@@ -1,0 +1,124 @@
+# Backend CI — lint, type-check, and test the FastAPI service.
+#
+# Branch protection recommendation:
+#   In GitHub → Settings → Branches → Branch protection rules for `main`:
+#   ✓ Require status checks to pass before merging
+#     Required checks: "test" (this workflow)
+#   ✓ Require branches to be up to date before merging
+#
+# PostgreSQL service container is included so future integration tests and
+# migration checks (`alembic upgrade head`) can run against a real database.
+# Current unit tests use SQLite in-memory for speed; the DATABASE_URL env var
+# points to the service container and is available for those future tests.
+
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  test:
+    name: Lint, type-check & test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+
+    # All `run` steps execute from the backend/ subdirectory.
+    defaults:
+      run:
+        working-directory: backend
+
+    # ── PostgreSQL service container ──────────────────────────────────────────
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    # ── Environment variables ─────────────────────────────────────────────────
+    # These satisfy pydantic-settings' required fields at import time.
+    # Tests override the database connection with SQLite in-memory.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+      JWT_SECRET_KEY: ci-test-secret-key-minimum-32-characters
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+      # JSON array format required by pydantic-settings v2 for list fields
+      BACKEND_CORS_ORIGINS: '["http://localhost"]'
+      ENV: test
+      DEBUG: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Python setup ─────────────────────────────────────────────────────────
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          # Bust cache when either requirements file changes
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('backend/requirements-dev.txt', 'backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      # ── Static analysis ───────────────────────────────────────────────────────
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Type-check with mypy
+        # continue-on-error lets the pipeline surface coverage even when mypy
+        # finds issues — tighten this once all types are fully annotated.
+        continue-on-error: true
+        run: mypy app
+
+      # ── Tests & coverage ─────────────────────────────────────────────────────
+      - name: Run pytest with coverage
+        run: |
+          pytest \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          # Path is relative to the workspace root, not working-directory
+          files: backend/coverage.xml
+          flags: backend
+          # Don't fail the build if Codecov is temporarily unavailable
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

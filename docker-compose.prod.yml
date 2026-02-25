@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  db:
+    restart: always
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+
+  backend:
+    restart: always
+    volumes: []           # no bind mount in prod
+    environment:
+      - ENV=production
+
+volumes:
+  postgres_data_prod:
