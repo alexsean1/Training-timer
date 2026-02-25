@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:mobile/core/network/api_client.dart';
-import 'package:mobile/core/network/api_exception.dart';
-import 'package:mobile/core/network/result.dart';
-import 'package:mobile/features/auth/data/auth_repository.dart';
-import 'package:mobile/features/auth/data/models/auth_models.dart';
+import 'package:training_timer/core/network/api_client.dart';
+import 'package:training_timer/core/network/api_exception.dart';
+import 'package:training_timer/core/network/result.dart';
+import 'package:training_timer/features/auth/data/auth_repository.dart';
+import 'package:training_timer/features/auth/data/models/auth_models.dart';
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 

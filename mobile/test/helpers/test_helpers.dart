@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mobile/features/auth/presentation/auth_notifier.dart';
+import 'package:training_timer/features/auth/presentation/auth_notifier.dart';
 
 // ─── FakeAuthNotifier ─────────────────────────────────────────────────────────
 

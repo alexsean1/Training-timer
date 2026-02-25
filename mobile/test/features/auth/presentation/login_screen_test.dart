@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mobile/features/auth/presentation/auth_notifier.dart';
-import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
+import 'package:training_timer/features/auth/presentation/auth_notifier.dart';
+import 'package:training_timer/features/auth/presentation/screens/login_screen.dart';
 
 import '../../../helpers/test_helpers.dart';
 

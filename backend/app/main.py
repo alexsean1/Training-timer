@@ -6,7 +6,7 @@ from app.api.v1.router import router as api_v1_router
 from app.core.config import settings
 from app.middleware.security import add_security_headers
 
-app = FastAPI(title="API", docs_url=None if settings.ENV == "production" else "/docs")
+app = FastAPI(title="Training Timer API", docs_url=None if settings.ENV == "production" else "/docs")
 
 # Security headers — added first, runs after CORS
 app.add_middleware(BaseHTTPMiddleware, dispatch=add_security_headers)

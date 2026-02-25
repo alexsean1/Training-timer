@@ -16,6 +16,7 @@ Work through each section in order.
 ## 2. Choose Your App Name
 
 Pick a name for your project. You'll use it in several places below.
+For this repo we chose `training_timer` for code and `Training Timer` for the display name.
 A good pattern: lowercase with underscores for code (`my_app`), title case for display (`My App`).
 
 ---

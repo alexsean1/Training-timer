@@ -1,5 +1,5 @@
-name: myapp
-description: "Flutter + FastAPI starter template with JWT auth, secure storage, and go_router."
+name: training_timer
+description: "Fitness app for custom workout timers with intervals, rest periods, and exercise sequences."
 publish_to: none
 version: 1.0.0+1
 

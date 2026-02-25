@@ -1,6 +1,6 @@
-# FastAPI + Flutter Starter Template
+# Training Timer
 
-A production-ready full-stack starter template for building mobile apps with a Python API backend. Ships with JWT authentication, end-to-end testing, Docker orchestration, and GitHub Actions CI — all wired together and ready to customise.
+A fitness application built with Flutter and FastAPI that lets users create custom workout timers with intervals, rest periods, and exercise sequences. The backend uses JWT auth and PostgreSQL; the mobile app is built with Riverpod, Dio, and go_router.
 
 ---
 
@@ -242,16 +242,16 @@ the original request — callers never need to handle token expiry manually.
 
 | Variable | Description | Example |
 |---|---|---|
-| `POSTGRES_USER` | Database user | `appuser` |
+| `POSTGRES_USER` | Database user | `training_user` |
 | `POSTGRES_PASSWORD` | Database password | `changeme` |
-| `POSTGRES_DB` | Database name | `appdb` |
-| `DATABASE_URL` | Full connection string (for scripts) | `postgresql://appuser:changeme@localhost:5432/appdb` |
+| `POSTGRES_DB` | Database name | `training_timer_db` |
+| `DATABASE_URL` | Full connection string (for scripts) | `postgresql://training_user:changeme@localhost:5432/training_timer_db` |
 
 ### `backend/.env` (FastAPI app)
 
 | Variable | Description | Example |
 |---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://appuser:changeme@localhost:5432/appdb` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://training_user:changeme@localhost:5432/training_timer_db` |
 | `JWT_SECRET_KEY` | JWT signing secret — **generate with `openssl rand -hex 32`** | — |
 | `JWT_ALGORITHM` | JWT algorithm | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime | `30` |
