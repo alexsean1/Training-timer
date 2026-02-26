@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../data/models/workout_models.dart';
 
 /// A simple countdown timer screen used as the starting point for workouts.
 ///
-/// For now the duration is hard-coded to 30 seconds; we'll later allow
-/// users to configure sequences of intervals.
+/// Accepts an optional [workout]; if none is provided it falls back to a
+/// single 30‑second interval.
 class TimerScreen extends StatefulWidget {
-  const TimerScreen({super.key});
+  final Workout? workout;
+  const TimerScreen({super.key, this.workout});
 
   @override
   State<TimerScreen> createState() => _TimerScreenState();
@@ -20,10 +24,22 @@ class _TimerScreenState extends State<TimerScreen> {
   Timer? _timer;
   bool _running = false;
 
+  // workout state
+  int _intervalIndex = 0;
+  bool _inWork = true;
+  int _roundsLeft = 0;
+
+  // visual cues
+  Color _backgroundColor = Colors.white;
+
   @override
   void initState() {
     super.initState();
-    _remaining = _initialDuration;
+    if (widget.workout != null && widget.workout!.intervals.isNotEmpty) {
+      _setupInterval(widget.workout!.intervals.first);
+    } else {
+      _remaining = _initialDuration;
+    }
   }
 
   @override
@@ -40,8 +56,9 @@ class _TimerScreenState extends State<TimerScreen> {
         if (_remaining > Duration.zero) {
           _remaining -= const Duration(seconds: 1);
         } else {
+          _beep();
           t.cancel();
-          _running = false;
+          _nextPhase();
         }
       });
     });
@@ -55,9 +72,66 @@ class _TimerScreenState extends State<TimerScreen> {
   void _reset() {
     _timer?.cancel();
     _running = false;
-    setState(() {
-      _remaining = _initialDuration;
-    });
+    if (widget.workout != null && widget.workout!.intervals.isNotEmpty) {
+      _intervalIndex = 0;
+      _inWork = true;
+      _setupInterval(widget.workout!.intervals.first);
+    } else {
+      setState(() {
+        _remaining = _initialDuration;
+        _backgroundColor = Colors.white;
+      });
+    }
+  }
+
+  void _setupInterval(WorkoutInterval interval) {
+    _roundsLeft = interval.rounds;
+    _inWork = true;
+    _remaining = interval.workDuration;
+    _backgroundColor = Colors.green.shade200;
+  }
+
+  void _nextPhase() {
+    final workout = widget.workout;
+    if (workout == null || workout.intervals.isEmpty) return;
+
+    final current = workout.intervals[_intervalIndex];
+
+    if (_inWork) {
+      // finished work, go to rest
+      if (current.restDuration > Duration.zero) {
+        _inWork = false;
+        _remaining = current.restDuration;
+        _backgroundColor = Colors.orange.shade200;
+        _start();
+        return;
+      }
+    }
+
+    // either coming from rest or no rest defined
+    _roundsLeft--;
+    if (_roundsLeft > 0) {
+      // start another round of work
+      _inWork = true;
+      _remaining = current.workDuration;
+      _backgroundColor = Colors.green.shade200;
+      _start();
+      return;
+    }
+
+    // move to next interval
+    _intervalIndex++;
+    if (_intervalIndex < workout.intervals.length) {
+      _setupInterval(workout.intervals[_intervalIndex]);
+      _start();
+    } else {
+      // workout finished
+      _running = false;
+    }
+  }
+
+  void _beep() {
+    SystemSound.play(SystemSoundType.click);
   }
 
   @override
@@ -66,6 +140,7 @@ class _TimerScreenState extends State<TimerScreen> {
     final seconds = _remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
 
     return Scaffold(
+      backgroundColor: _backgroundColor,
       appBar: AppBar(title: const Text('Timer')),
       body: Center(
         child: Column(

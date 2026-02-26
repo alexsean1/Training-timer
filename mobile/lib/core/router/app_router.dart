@@ -6,6 +6,7 @@ import '../../features/auth/presentation/auth_notifier.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/workout/presentation/screens/timer_screen.dart';
+import '../../features/workout/presentation/screens/workout_editor_screen.dart';
 
 // Bridges AuthNotifier (a ChangeNotifier) to GoRouter's refreshListenable.
 // GoRouter calls the redirect callback whenever this notifier fires,
@@ -54,7 +55,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/timer',
-        builder: (_, state) => const TimerScreen(),
+        builder: (_, state) {
+          final workout = state.extra as Workout?;
+          return TimerScreen(workout: workout);
+        },
+      ),
+      GoRoute(
+        path: '/editor',
+        builder: (_, __) => const WorkoutEditorScreen(),
       ),
     ],
   );
@@ -81,8 +89,13 @@ class _HomeScreen extends ConsumerWidget {
             const Text('Welcome!'),
             const SizedBox(height: 20),
             ElevatedButton(
+              onPressed: () => context.go('/editor'),
+              child: const Text('New workout'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
               onPressed: () => context.go('/timer'),
-              child: const Text('Start Timer'),
+              child: const Text('Quick start'),
             ),
           ],
         ),
