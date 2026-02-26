@@ -32,9 +32,9 @@ const _userJson = {
 ///
 /// This pattern lets the stub exercise the actual deserialization code
 /// instead of hard-coding a fake model object.
-void _stubPost(MockApiClient client, Map<String, dynamic> responseJson) {
+void _stubPost<T>(MockApiClient client, Map<String, dynamic> responseJson) {
   when(
-    () => client.post(
+    () => client.post<T>(
       any(),
       fromJson: any(named: 'fromJson'),
       data: any(named: 'data'),
@@ -46,9 +46,9 @@ void _stubPost(MockApiClient client, Map<String, dynamic> responseJson) {
   });
 }
 
-void _stubGet(MockApiClient client, Map<String, dynamic> responseJson) {
+void _stubGet<T>(MockApiClient client, Map<String, dynamic> responseJson) {
   when(
-    () => client.get(
+    () => client.get<T>(
       any(),
       fromJson: any(named: 'fromJson'),
     ),
@@ -59,9 +59,9 @@ void _stubGet(MockApiClient client, Map<String, dynamic> responseJson) {
   });
 }
 
-void _stubPostThrows(MockApiClient client, ApiException exception) {
+void _stubPostThrows<T>(MockApiClient client, ApiException exception) {
   when(
-    () => client.post(
+    () => client.post<T>(
       any(),
       fromJson: any(named: 'fromJson'),
       data: any(named: 'data'),
@@ -69,9 +69,9 @@ void _stubPostThrows(MockApiClient client, ApiException exception) {
   ).thenThrow(exception);
 }
 
-void _stubGetThrows(MockApiClient client, ApiException exception) {
+void _stubGetThrows<T>(MockApiClient client, ApiException exception) {
   when(
-    () => client.get(
+    () => client.get<T>(
       any(),
       fromJson: any(named: 'fromJson'),
     ),
@@ -93,8 +93,7 @@ void main() {
 
   group('AuthRepository.login', () {
     test('returns Ok<TokenResponse> on success', () async {
-      _stubPost(mockClient, _tokenJson);
-
+        _stubPost<TokenResponse>(mockClient, _tokenJson);
       final result = await repository.login('user@example.com', 'password123');
 
       expect(result, isA<Ok<TokenResponse>>());
@@ -105,7 +104,7 @@ void main() {
     });
 
     test('returns Err<UnauthorisedException> on wrong credentials', () async {
-      _stubPostThrows(mockClient, const UnauthorisedException('Invalid credentials.'));
+      _stubPostThrows<TokenResponse>(mockClient, const UnauthorisedException('Invalid credentials.'));
 
       final result = await repository.login('user@example.com', 'wrong');
 
@@ -114,8 +113,7 @@ void main() {
     });
 
     test('returns Err<NetworkException> when offline', () async {
-      _stubPostThrows(mockClient, const NetworkException());
-
+        _stubPostThrows<TokenResponse>(mockClient, const NetworkException());
       final result = await repository.login('user@example.com', 'password123');
 
       expect(result, isA<Err<TokenResponse>>());
@@ -127,8 +125,7 @@ void main() {
 
   group('AuthRepository.register', () {
     test('returns Ok<TokenResponse> on success', () async {
-      _stubPost(mockClient, _tokenJson);
-
+        _stubPost<TokenResponse>(mockClient, _tokenJson);
       final result =
           await repository.register('new@example.com', 'password123');
 
@@ -137,7 +134,7 @@ void main() {
     });
 
     test('returns Err<ConflictException> on duplicate email', () async {
-      _stubPostThrows(mockClient, const ConflictException('Email already registered'));
+      _stubPostThrows<TokenResponse>(mockClient, const ConflictException('Email already registered'));
 
       final result =
           await repository.register('existing@example.com', 'password123');
@@ -150,7 +147,7 @@ void main() {
 
     test('returns Err<ValidationException> on server validation failure',
         () async {
-      _stubPostThrows(
+      _stubPostThrows<TokenResponse>(
           mockClient, const ValidationException('Password too weak'));
 
       final result = await repository.register('x@example.com', 'weak');
@@ -164,7 +161,7 @@ void main() {
 
   group('AuthRepository.getMe', () {
     test('returns Ok<AppUser> on success', () async {
-      _stubGet(mockClient, _userJson);
+      _stubGet<AppUser>(mockClient, _userJson);
 
       final result = await repository.getMe();
 
@@ -175,7 +172,7 @@ void main() {
     });
 
     test('returns Err<UnauthorisedException> when token is invalid', () async {
-      _stubGetThrows(mockClient, const UnauthorisedException());
+      _stubGetThrows<AppUser>(mockClient, const UnauthorisedException());
 
       final result = await repository.getMe();
 
@@ -184,7 +181,7 @@ void main() {
     });
 
     test('returns Err<NetworkException> when offline', () async {
-      _stubGetThrows(mockClient, const NetworkException());
+      _stubGetThrows<AppUser>(mockClient, const NetworkException());
 
       final result = await repository.getMe();
 
@@ -197,19 +194,19 @@ void main() {
 
   group('Result helpers', () {
     test('Ok.valueOrThrow returns the value', () async {
-      _stubPost(mockClient, _tokenJson);
+      _stubPost<TokenResponse>(mockClient, _tokenJson);
       final result = await repository.login('u@e.com', 'password123');
       expect(result.valueOrThrow, isA<TokenResponse>());
     });
 
     test('Err.valueOrThrow throws the contained ApiException', () async {
-      _stubPostThrows(mockClient, const NetworkException('Offline'));
+      _stubPostThrows<TokenResponse>(mockClient, const NetworkException('Offline'));
       final result = await repository.login('u@e.com', 'password123');
       expect(() => result.valueOrThrow, throwsA(isA<NetworkException>()));
     });
 
     test('Ok.map transforms the value', () async {
-      _stubPost(mockClient, _tokenJson);
+      _stubPost<TokenResponse>(mockClient, _tokenJson);
       final result = await repository.login('u@e.com', 'password123');
       final mapped = result.map((t) => t.accessToken);
       expect(mapped, isA<Ok<String>>());
