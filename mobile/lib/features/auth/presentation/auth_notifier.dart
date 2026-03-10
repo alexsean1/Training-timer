@@ -27,6 +27,8 @@ class AuthNotifier extends ChangeNotifier {
 
   AuthState _state = const AuthState(status: AuthStatus.initial);
   AuthState get state => _state;
+  
+  bool _disposed = false;
 
   /// The [ApiClient] used for all authenticated requests.
   ///
@@ -61,11 +63,18 @@ class AuthNotifier extends ChangeNotifier {
 
   Future<void> _checkStoredSession() async {
     final token = await SecureStorage.getAccessToken();
+    if (_disposed) return;
     _state = AuthState(
       status:
           token != null ? AuthStatus.authenticated : AuthStatus.unauthenticated,
     );
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   // ─── Session expiry (called by ApiClient interceptor) ───────────────────────
@@ -74,7 +83,8 @@ class AuthNotifier extends ChangeNotifier {
   ///
   /// Marks the session as unauthenticated, which causes [authProvider]'s
   /// listeners (including go_router) to redirect to the login screen.
-  void handleSessionExpired() {
+  Future<void> handleSessionExpired() async {
+    if (_disposed) return;
     _state = const AuthState(status: AuthStatus.unauthenticated);
     notifyListeners();
   }

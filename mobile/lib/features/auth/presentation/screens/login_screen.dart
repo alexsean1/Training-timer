@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/theme/app_theme.dart';
 import '../auth_notifier.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -48,6 +49,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const Icon(
+                    Icons.timer_outlined,
+                    size: 64,
+                    color: AppColors.work,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Training Timer',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.work,
+                          letterSpacing: 1.5,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     'Sign In',
                     style: Theme.of(context).textTheme.headlineMedium,

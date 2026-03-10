@@ -1,5 +1,4 @@
 import '../../../core/constants/api_constants.dart';
-import '../../../core/network/api_client.dart';
 import '../../../core/network/base_repository.dart';
 import '../../../core/network/result.dart';
 import 'models/auth_models.dart';
@@ -17,7 +16,7 @@ import 'models/auth_models.dart';
 /// }
 /// ```
 class AuthRepository extends BaseRepository {
-  const AuthRepository(ApiClient client) : super(client);
+  const AuthRepository(super.client);
 
   Future<Result<TokenResponse>> login(String email, String password) =>
       safeCall(() => client.post(

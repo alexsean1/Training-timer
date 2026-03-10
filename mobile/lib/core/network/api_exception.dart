@@ -52,21 +52,18 @@ final class NotFoundException extends ApiException {
 
 /// 409 — conflict, e.g. duplicate email on registration.
 final class ConflictException extends ApiException {
-  const ConflictException(super.message);
+  const ConflictException([super.message = 'Conflict.']);
 }
 
 /// 422 — server-side validation failed.
 final class ValidationException extends ApiException {
-  const ValidationException(super.message);
+  const ValidationException([super.message = 'Validation error.']);
 }
 
 /// 5xx — server-side error.
 final class ServerException extends ApiException {
   final int? statusCode;
-  const ServerException({
-    super.message = 'A server error occurred. Please try again later.',
-    this.statusCode,
-  });
+  const ServerException({String message = 'A server error occurred. Please try again later.', this.statusCode}) : super(message);
 }
 
 /// Catch-all for unexpected errors that do not fit any other category.
